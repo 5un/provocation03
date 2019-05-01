@@ -3,14 +3,22 @@ try:
     import time
     import pyaudio
     import dialogflow_v2 as dialogflow
+    from intent_handler import IntentHandler
 except:
     print("Something didn't import")
+
+
+handler = IntentHandler()
 
 def detect_intent_stream(project_id, session_id, language_code):
     """Returns the result of detect intent with streaming audio as input.
 
     Using the same `session_id` between requests allows continuation
     of the conversation."""
+    
+    # Bring intent handler from outside scope
+    global handler
+    
     session_client = dialogflow.SessionsClient.from_service_account_file('./secret/dialogflow.json')
 
     # Note: hard coding audio_encoding and sample_rate_hertz for simplicity.
@@ -88,10 +96,14 @@ def detect_intent_stream(project_id, session_id, language_code):
             print('Detected intent: {} (confidence: {})\n'.format(
                 query_result.intent.display_name,
                 query_result.intent_detection_confidence))
-            print('Fulfillment text: {}\n'.format(
-                query_result.fulfillment_text))
+            # print('Fulfillment text: {}\n'.format(
+            #     query_result.fulfillment_text))
+
+            if query_result is not None:
+                handler.handle_intent(query_result)
         except KeyboardInterrupt:
             print('KeyboardInterrupt, exiting...')
+            handler.clean_up()
             break
         except:
             print('Exception!!')
