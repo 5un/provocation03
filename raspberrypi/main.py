@@ -57,6 +57,7 @@ def detect_intent_stream(project_id, session_id, language_code):
         record_start_time = time.time()
         while True:
             chunk = stream.read(CHUNK)
+            print('chunk')
             if not chunk:
                 break
 
