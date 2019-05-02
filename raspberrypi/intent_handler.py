@@ -11,13 +11,15 @@ class IntentHandler:
     self.servo = p = GPIO.PWM(12, 50)
     self.servo.start(7.5)
 
-    self.pixels = pixels = neopixel.NeoPixel(board.D21, 1)
+    self.pixels = pixels = neopixel.NeoPixel(board.D13, 1)
 
   def handle_misogynistic(self):
-    # Control Neopixel
-    self.pixels.fill((255, 0, 0))
     # Control The Servo
     self.servo.ChangeDutyCycle(12.5)
+    time.sleep(1)
+    self.servo.ChangeDutyCycle(7.5)
+    # Control Neopixel
+    self.pixels.fill((255, 0, 0))
     pass
 
   def handle_supportive(self):

@@ -6,9 +6,6 @@ import board
 import neopixel
 from intent_handler import IntentHandler
 
-
-handler = IntentHandler()
-
 def detect_intent_stream(project_id, session_id, language_code):
     """Returns the result of detect intent with streaming audio as input.
 
@@ -16,7 +13,7 @@ def detect_intent_stream(project_id, session_id, language_code):
     of the conversation."""
     
     # Bring intent handler from outside scope
-    global handler
+    intent_handler = IntentHandler()
     
     session_client = dialogflow.SessionsClient.from_service_account_file('./secret/dialogflow.json')
 
@@ -57,7 +54,6 @@ def detect_intent_stream(project_id, session_id, language_code):
         record_start_time = time.time()
         while True:
             chunk = stream.read(CHUNK)
-            print('chunk')
             if not chunk:
                 print('chunk is empty')
                 break
@@ -85,7 +81,7 @@ def detect_intent_stream(project_id, session_id, language_code):
         print('=' * 20)
         try:
             for response in responses:
-                print('Intermediate transcript: "{}".'.format(
+                 print('Intermediate transcript: "{}".'.format(
                         response.recognition_result.transcript))
 
             # Note: The result from the last response is the final transcript along
@@ -101,22 +97,22 @@ def detect_intent_stream(project_id, session_id, language_code):
             #     query_result.fulfillment_text))
 
             if query_result is not None:
-                handler.handle_intent(query_result)
+                intent_handler.handle_intent(query_result)
         except KeyboardInterrupt:
             print('KeyboardInterrupt, exiting...')
-            handler.clean_up()
+            intent_handler.clean_up()
             break
         except Exception as e:
             print('Exception!!', e)
 
 # Initial Blinking
-pixels = neopixel.NeoPixel(board.D21, 1)
-for i in range(3):
-    pixels.fill((255,255,255))
-    time.sleep(0.5)
-    pixels.fill((0,0,0))
-    time.sleep(0.5)
-pixels.fill((0,0,0))
+# pixels = neopixel.NeoPixel(board.D12, 1)
+# for i in range(3):
+#    pixels.fill((255,255,255))
+#    time.sleep(0.5)
+#    pixels.fill((0,0,0))
+#    time.sleep(0.5)
+#pixels.fill((0,0,0))
 
 detect_intent_stream('provocation03', 'test1', 'en')
 
