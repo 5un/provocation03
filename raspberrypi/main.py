@@ -1,11 +1,8 @@
 from __future__ import print_function
-try:
-    import time
-    import pyaudio
-    import dialogflow_v2 as dialogflow
-    from intent_handler import IntentHandler
-except:
-    print("Something didn't import")
+import time
+import pyaudio
+import dialogflow_v2 as dialogflow
+from intent_handler import IntentHandler
 
 
 handler = IntentHandler()
@@ -105,8 +102,8 @@ def detect_intent_stream(project_id, session_id, language_code):
             print('KeyboardInterrupt, exiting...')
             handler.clean_up()
             break
-        except:
-            print('Exception!!')
+        except Exception as e:
+            print('Exception!!', e)
 
 
 detect_intent_stream('provocation03', 'test1', 'en')
