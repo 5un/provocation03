@@ -19,18 +19,22 @@ class IntentHandler:
     self.servo.ChangeDutyCycle(12.5)
     time.sleep(1)
     self.servo.ChangeDutyCycle(7.5)
+
+    self.leds.blink(color=(255,0,0), num_repeat=3, duration=0.25)
     # Control Neopixel
-    self.pixels.fill((255, 0, 0))
+    # self.pixels.fill((255, 0, 0))
     pass
 
   def handle_supportive(self):
     # Control Neopixel
-    self.pixels.fill((0, 255, 0))
+    self.leds.blink(color=(255,0,255), num_repeat=3, duration=0.25)
+    # self.pixels.fill((0, 255, 0))
     pass
 
   def handle_test(self):
     # Control Neopixel
-    self.pixels.fill((255, 255, 255))
+    self.leds.blink(color=(128,128,128), num_repeat=3, duration=0.25)
+    # self.pixels.fill((255, 255, 255))
     pass
 
   def handle_intent(self, query_result):
