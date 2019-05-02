@@ -10,7 +10,7 @@ class LEDHelper:
       self.pixels.set_pixel(i, color[0], color[1], color[2])
       self.pixels.show()
 
-  def set_pixel(self, index, color)
+  def set_pixel(self, index, color):
     self.pixels.set_pixel(index, color[0], color[1], color[2])
     self.pixels.show()
 
@@ -35,6 +35,7 @@ class LEDHelper:
       time.sleep(duration)
       self.clear(color=color)
       time.sleep(duration)
+    self.clear()
 
   def knight_rider(self, color=(255,255,255), num_repeat=1, duration=0.5):
     black = (0,0,0)
