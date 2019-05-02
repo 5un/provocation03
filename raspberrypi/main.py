@@ -59,6 +59,7 @@ def detect_intent_stream(project_id, session_id, language_code):
             chunk = stream.read(CHUNK)
             print('chunk')
             if not chunk:
+                print('chunk is empty')
                 break
 
             # The later requests contains audio data.
