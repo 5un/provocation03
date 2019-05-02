@@ -31,7 +31,8 @@ class IntentHandler:
     pass
 
   def handle_intent(self, query_result):
-    if query_result.intent is not None:
+    print('Handling Intent...')
+    if (query_result.intent is not None) and (query_result.intent.display_name is not None):
       name = query_result.intent.display_name
       if name == 'Misogynistic':
         self.handle_misogynistic()
@@ -42,7 +43,7 @@ class IntentHandler:
       if name == 'Test':
         self.handle_test()
 
-  def clean_up():
+  def clean_up(self):
     self.servo.stop()
     GPIO.cleanup()
     
