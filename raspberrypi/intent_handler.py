@@ -5,13 +5,14 @@ import neopixel
 
 class IntentHandler:
 
-  def __init__(self):
+  def __init__(self, leds):
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(12, GPIO.OUT)
     self.servo = p = GPIO.PWM(12, 50)
     self.servo.start(7.5)
 
-    self.pixels = pixels = neopixel.NeoPixel(board.D13, 1)
+    self.leds = leds
+    self.pixels = neopixel.NeoPixel(board.D13, 1)
 
   def handle_misogynistic(self):
     # Control The Servo

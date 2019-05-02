@@ -5,6 +5,9 @@ import dialogflow_v2 as dialogflow
 import board
 import neopixel
 from intent_handler import IntentHandler
+from led_helper import LEDHelper
+
+leds = LEDHelper()
 
 def detect_intent_stream(project_id, session_id, language_code):
     """Returns the result of detect intent with streaming audio as input.
@@ -13,7 +16,8 @@ def detect_intent_stream(project_id, session_id, language_code):
     of the conversation."""
     
     # Bring intent handler from outside scope
-    intent_handler = IntentHandler()
+    global leds
+    intent_handler = IntentHandler(leds)
     
     session_client = dialogflow.SessionsClient.from_service_account_file('./secret/dialogflow.json')
 
@@ -105,14 +109,6 @@ def detect_intent_stream(project_id, session_id, language_code):
         except Exception as e:
             print('Exception!!', e)
 
-# Initial Blinking
-# pixels = neopixel.NeoPixel(board.D12, 1)
-# for i in range(3):
-#    pixels.fill((255,255,255))
-#    time.sleep(0.5)
-#    pixels.fill((0,0,0))
-#    time.sleep(0.5)
-#pixels.fill((0,0,0))
-
+leds.knight_rider()
 detect_intent_stream('provocation03', 'test1', 'en')
 
