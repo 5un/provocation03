@@ -42,11 +42,11 @@ def detect_intent_stream(project_id, session_id, language_code):
 
         # Claim the microphone
         stream = audio.open(format=FORMAT,
-        channels=CHANNELS,
-        rate=sample_rate_hertz, 
-        input=True,
-        input_device_index=RESPEAKER_INDEX)#,
-        #frames_per_buffer=CHUNK)
+            channels=CHANNELS,
+            rate=sample_rate_hertz, 
+            input=True,
+            input_device_index=RESPEAKER_INDEX)#,
+            #frames_per_buffer=CHUNK)
 
         # Here we are reading small chunks of audio data from a local
         # audio file.  In practice these chunks should come from
@@ -105,6 +105,14 @@ def detect_intent_stream(project_id, session_id, language_code):
         except Exception as e:
             print('Exception!!', e)
 
+# Initial Blinking
+pixels = neopixel.NeoPixel(board.D21, 1)
+for i in range(3):
+    pixels.fill(255,255,255)
+    time.sleep(0.5)
+    pixels.fill(0,0,0)
+    time.sleep(0.5)
+pixels.fill(0,0,0)
 
 detect_intent_stream('provocation03', 'test1', 'en')
 
