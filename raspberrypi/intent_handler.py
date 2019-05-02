@@ -1,5 +1,7 @@
 import RPi.GPIO as GPIO
 import time
+import board
+import neopixel
 
 class IntentHandler:
 
@@ -9,19 +11,23 @@ class IntentHandler:
     self.servo = p = GPIO.PWM(12, 50)
     self.servo.start(7.5)
 
+    self.pixels = pixels = neopixel.NeoPixel(board.D18, 1)
+
   def handle_misogynistic(self):
     # Control Neopixel
+    pixels.fill((255, 0, 0))
     # Control The Servo
     self.servo.ChangeDutyCycle(12.5)
     pass
 
-  def handle_assertive(self):
+  def handle_supportive(self):
     # Control Neopixel
-    
+    pixels.fill((0, 255, 0))
     pass
 
   def handle_test(self):
     # Control Neopixel
+    pixels.fill((255, 255, 255))
     pass
 
   def handle_intent(self, query_result):
@@ -30,8 +36,8 @@ class IntentHandler:
       if name == 'Misogynistic':
         self.handle_misogynistic()
 
-      if name == 'Assertive'
-        self.handle_assertive()
+      if name == 'Supportive'
+        self.handle_supportive()
 
       if name == 'Test'
         self.handle_test()
