@@ -2,6 +2,8 @@ from __future__ import print_function
 import time
 import pyaudio
 import dialogflow_v2 as dialogflow
+import board
+import neopixel
 from intent_handler import IntentHandler
 
 
@@ -108,11 +110,11 @@ def detect_intent_stream(project_id, session_id, language_code):
 # Initial Blinking
 pixels = neopixel.NeoPixel(board.D21, 1)
 for i in range(3):
-    pixels.fill(255,255,255)
+    pixels.fill((255,255,255))
     time.sleep(0.5)
-    pixels.fill(0,0,0)
+    pixels.fill((0,0,0))
     time.sleep(0.5)
-pixels.fill(0,0,0)
+pixels.fill((0,0,0))
 
 detect_intent_stream('provocation03', 'test1', 'en')
 
