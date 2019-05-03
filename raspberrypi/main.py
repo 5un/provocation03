@@ -1,6 +1,7 @@
 from __future__ import print_function
 import time
 import pyaudio
+import audioop
 import dialogflow_v2 as dialogflow
 import board
 import neopixel
@@ -30,6 +31,9 @@ def detect_intent_stream(project_id, session_id, language_code):
     CHUNK = 4096 # 1024 bytes of data read from the buffer
     RESPEAKER_INDEX = 2
     MAX_RECORD_TIME = 10.0
+    MAX_IDLE_TIME = 3.0
+    VOLUME_RMS_THRESHOLD = 300
+    SHOW_RMS = True
 
     audio = pyaudio.PyAudio()
 
@@ -56,6 +60,8 @@ def detect_intent_stream(project_id, session_id, language_code):
         # an audio input device.
         
         record_start_time = time.time()
+        voice_began = False
+        idle_time = 0
         while True:
             chunk = stream.read(CHUNK)
             if not chunk:
@@ -66,10 +72,27 @@ def detect_intent_stream(project_id, session_id, language_code):
             yield dialogflow.types.StreamingDetectIntentRequest(
                 input_audio=chunk)
 
-            record_duration = time.time() - record_start_time
-            if record_duration > MAX_RECORD_TIME:
-                break
+            # record_duration = time.time() - record_start_time
+            # if record_duration > MAX_RECORD_TIME:
+            #     break
 
+            rms = audioop.rms(chunk, 2)
+            if SHOW_RMS:
+                print('rms', rms)
+            is_speaking = rms > self.VOLUME_RMS_THRESHOLD
+
+            if not voice_began:
+                # print('  Idle Time', time.time() - timeSinceRecognitionStart)
+                if is_speaking:
+                    voice_began = True
+                    idle_time = time.time()
+            else:
+                # print('   Speak Time', time.time() - idleTime)
+                if is_speaking:
+                    idleTime = time.time()
+                else:
+                    if time.time() - idle_time > MAX_IDLE_TIME:
+                       break 
 
         stream.stop_stream()
         stream.close()
