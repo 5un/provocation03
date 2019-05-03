@@ -109,6 +109,6 @@ def detect_intent_stream(project_id, session_id, language_code):
         except Exception as e:
             print('Exception!!', e)
 
-leds.knight_rider(num_repeat=3, duration=0.05)
+leds.knight_rider(num_repeat=3, duration=0.1)
 detect_intent_stream('provocation03', 'test1', 'en')
 
