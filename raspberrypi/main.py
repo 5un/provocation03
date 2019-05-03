@@ -79,7 +79,7 @@ def detect_intent_stream(project_id, session_id, language_code):
             rms = audioop.rms(chunk, 2)
             if SHOW_RMS:
                 print('rms', rms)
-            is_speaking = rms > self.VOLUME_RMS_THRESHOLD
+            is_speaking = rms > VOLUME_RMS_THRESHOLD
 
             if not voice_began:
                 # print('  Idle Time', time.time() - timeSinceRecognitionStart)
