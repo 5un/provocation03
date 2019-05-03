@@ -89,7 +89,7 @@ def detect_intent_stream(project_id, session_id, language_code):
             else:
                 # print('   Speak Time', time.time() - idleTime)
                 if is_speaking:
-                    idleTime = time.time()
+                    idle_time = time.time()
                 else:
                     if time.time() - idle_time > MAX_IDLE_TIME:
                        break 
