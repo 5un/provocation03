@@ -32,7 +32,7 @@ def detect_intent_stream(project_id, session_id, language_code):
     RESPEAKER_INDEX = 2
     MAX_RECORD_TIME = 10.0
     MAX_IDLE_TIME = 3.0
-    VOLUME_RMS_THRESHOLD = 300
+    VOLUME_RMS_THRESHOLD = 2000
     SHOW_RMS = True
 
     audio = pyaudio.PyAudio()
