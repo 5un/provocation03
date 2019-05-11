@@ -36,7 +36,7 @@ def detect_intent_stream(project_id, session_id, language_code):
     CHUNK = 4096 # 1024 bytes of data read from the buffer
     RESPEAKER_INDEX = 2
     MAX_RECORD_TIME = 50.0 # Play with these
-    MAX_IDLE_TIME = 3.0
+    MAX_IDLE_TIME = 1.5
     VOLUME_RMS_THRESHOLD = 2000
     SHOW_RMS = False
 
@@ -85,7 +85,9 @@ def detect_intent_stream(project_id, session_id, language_code):
 
             if not voice_began:
                 # print('  Idle Time', time.time() - timeSinceRecognitionStart)
-                if is_speaking:
+                if time.time() - record_start_time > MAX_RECORD_TIME:
+                    break
+                elif is_speaking:
                     voice_began = True
                     idle_time = time.time()
             else:
