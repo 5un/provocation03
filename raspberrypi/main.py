@@ -1,10 +1,11 @@
 from __future__ import print_function
 import time
 import pyaudio
-import audioop
 import dialogflow_v2 as dialogflow
-import board
-import neopixel
+from google.cloud import speech
+from google.cloud.speech import enums
+from google.cloud.speech import types
+from google.oauth2 import service_account
 from intent_handler import IntentHandler
 from led_helper import LEDHelper
 
@@ -15,42 +16,45 @@ def detect_intent_stream(project_id, session_id, language_code):
 
     Using the same `session_id` between requests allows continuation
     of the conversation."""
-    
-    # Bring intent handler from outside scope
     global leds
-    intent_handler = IntentHandler(leds)
+    handler = IntentHandler(leds)
     
+    # Init Cloud SpeechClient
+    credentials = service_account.Credentials.from_service_account_file('./secret/cloud-speech.json')
+    speech_client = speech.SpeechClient(credentials=credentials)
+
+    # Init DialogFlow
     session_client = dialogflow.SessionsClient.from_service_account_file('./secret/dialogflow.json')
 
     # Note: hard coding audio_encoding and sample_rate_hertz for simplicity.
     audio_encoding = dialogflow.enums.AudioEncoding.AUDIO_ENCODING_LINEAR_16
-    sample_rate_hertz = 16000
+    SAMPLE_RATE_HERTZ = 16000
 
     FORMAT = pyaudio.paInt16 # We use 16 bit format per sample
     CHANNELS = 1
     CHUNK = 4096 # 1024 bytes of data read from the buffer
     RESPEAKER_INDEX = 2
-    MAX_RECORD_TIME = 10.0
+    MAX_RECORD_TIME = 50.0 # Play with these
     MAX_IDLE_TIME = 3.0
     VOLUME_RMS_THRESHOLD = 2000
-    SHOW_RMS = True
+    SHOW_RMS = False
 
     audio = pyaudio.PyAudio()
 
     session_path = session_client.session_path(project_id, session_id)
     print('Session path: {}\n'.format(session_path))
 
-    def request_generator(audio_config):
-        query_input = dialogflow.types.QueryInput(audio_config=audio_config)
+    def request_generator():
+        # query_input = dialogflow.types.QueryInput(audio_config=audio_config)
 
-        # The first request contains the configuration.
-        yield dialogflow.types.StreamingDetectIntentRequest(
-            session=session_path, query_input=query_input)
+        # # The first request contains the configuration.
+        # yield dialogflow.types.StreamingDetectIntentRequest(
+        #     session=session_path, query_input=query_input)
 
         # Claim the microphone
         stream = audio.open(format=FORMAT,
             channels=CHANNELS,
-            rate=sample_rate_hertz, 
+            rate=SAMPLE_RATE_HERTZ, 
             input=True,
             input_device_index=RESPEAKER_INDEX)#,
             #frames_per_buffer=CHUNK)
@@ -64,17 +68,14 @@ def detect_intent_stream(project_id, session_id, language_code):
         idle_time = 0
         while True:
             chunk = stream.read(CHUNK)
+            # print('chunk')
             if not chunk:
                 print('chunk is empty')
                 break
 
-            # The later requests contains audio data.
-            yield dialogflow.types.StreamingDetectIntentRequest(
-                input_audio=chunk)
+            # Yield a CloudSpeech request
+            yield types.StreamingRecognizeRequest(audio_content=chunk)
 
-            # record_duration = time.time() - record_start_time
-            # if record_duration > MAX_RECORD_TIME:
-            #     break
 
             rms = audioop.rms(chunk, 2)
             if SHOW_RMS:
@@ -90,48 +91,88 @@ def detect_intent_stream(project_id, session_id, language_code):
                 # print('   Speak Time', time.time() - idleTime)
                 if is_speaking:
                     idle_time = time.time()
+                    if time.time() - record_start_time > MAX_RECORD_TIME:
+                        break
                 else:
                     if time.time() - idle_time > MAX_IDLE_TIME:
                        break 
 
-        stream.stop_stream()
-        stream.close()
-
-    audio_config = dialogflow.types.InputAudioConfig(
-        audio_encoding=audio_encoding, language_code=language_code,
-        sample_rate_hertz=sample_rate_hertz)
+        # try to not close the stream?
+        # stream.stop_stream()
+        # stream.close()
 
     while True:
-        requests = request_generator(audio_config)
-        responses = session_client.streaming_detect_intent(requests)
+
+        config = types.RecognitionConfig(
+                encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
+                sample_rate_hertz=SAMPLE_RATE_HERTZ,
+                language_code='en-US')
+        streaming_config = types.StreamingRecognitionConfig(config=config)
+
+        requests = request_generator()
+        responses = speech_client.streaming_recognize(streaming_config, requests)
 
         print('=' * 20)
         try:
+            collected_text = ''
             for response in responses:
-                 print('Intermediate transcript: "{}".'.format(
-                        response.recognition_result.transcript))
+                # Once the transcription has settled, the first result will contain the
+                # is_final result. The other results will be for subsequent portions of
+                # the audio.
+                for result in response.results:
+                    print('Finished: {}'.format(result.is_final))
+                    print('Stability: {}'.format(result.stability))
+                    alternatives = result.alternatives
+                    # The alternatives are ordered from most likely to least.
+                    max_confidence = 0
+                    max_confidence_text = ''
+                    for alternative in alternatives:
+                        print('Confidence: {}'.format(alternative.confidence))
+                        print(u'Transcript: {}'.format(alternative.transcript))
+                        if alternative.confidence > max_confidence:
+                            max_confidence = alternative.confidence
+                            max_confidence_text = alternative.transcript
+                    collected_text += ' ' + max_confidence_text
 
-            # Note: The result from the last response is the final transcript along
-            # with the detected content.
-            query_result = response.query_result
+            utterance = collected_text[:min(len(collected_text), 255)]
+            print('collected_text:', collected_text)
 
-            print('=' * 20)
-            print('Query text: {}'.format(query_result.query_text))
-            print('Detected intent: {} (confidence: {})\n'.format(
-                query_result.intent.display_name,
-                query_result.intent_detection_confidence))
-            # print('Fulfillment text: {}\n'.format(
-            #     query_result.fulfillment_text))
+            # TODO, do text recognition
+            # for text in texts:
+            if len(collected_text) > 0:
+                text_input = dialogflow.types.TextInput(
+                    text=utterance, language_code=self.language_code)
 
-            if query_result is not None:
-                intent_handler.handle_intent(query_result)
+                query_input = dialogflow.types.QueryInput(text=text_input)
+
+                response = self.session_client.detect_intent(
+                    session=self.session_path, 
+                    query_input=query_input)
+
+                query_result = response.query_result
+
+                if query_result is not None:
+                    print('=' * 20)
+                    print('Query text: {}'.format(query_result.query_text))
+                    print('Detected intent: {} (confidence: {})\n'.format(
+                        query_result.intent.display_name,
+                        query_result.intent_detection_confidence))
+                    print('Query Text Sentiment Score: {}\n'.format(
+                        response.query_result.sentiment_analysis_result
+                        .query_text_sentiment.score))
+                    print('Query Text Sentiment Magnitude: {}\n'.format(
+                        response.query_result.sentiment_analysis_result
+                        .query_text_sentiment.magnitude))
+                    handler.handle_intent(query_result)
+
         except KeyboardInterrupt:
             print('KeyboardInterrupt, exiting...')
-            intent_handler.clean_up()
+            handler.clean_up()
             break
         except Exception as e:
             print('Exception!!', e)
 
+# Initial Blinking
 leds.knight_rider(num_repeat=3, duration=0.1)
 detect_intent_stream('provocation03', 'test1', 'en')
 
