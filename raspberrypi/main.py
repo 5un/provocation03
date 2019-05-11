@@ -7,10 +7,15 @@ from google.cloud import speech
 from google.cloud.speech import enums
 from google.cloud.speech import types
 from google.oauth2 import service_account
+import RPi.GPIO as GPIO
 from intent_handler import IntentHandler
 from led_helper import LEDHelper
 
 leds = LEDHelper()
+
+BUTTON = 17
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(BUTTON, GPIO.IN)
 
 def detect_intent_stream(project_id, session_id, language_code):
     """Returns the result of detect intent with streaming audio as input.
@@ -18,6 +23,7 @@ def detect_intent_stream(project_id, session_id, language_code):
     Using the same `session_id` between requests allows continuation
     of the conversation."""
     global leds
+    global BUTTON
     handler = IntentHandler(leds)
     
     # Init Cloud SpeechClient
@@ -169,6 +175,10 @@ def detect_intent_stream(project_id, session_id, language_code):
                         query_result.intent_detection_confidence))
 
                     handler.handle_intent(query_result)
+
+            state = GPIO.input(BUTTON)
+            if state:
+                handler.handle_misogynistic()
 
         except KeyboardInterrupt:
             print('KeyboardInterrupt, exiting...')
