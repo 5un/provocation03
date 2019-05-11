@@ -12,7 +12,7 @@ class IntentHandler:
     self.servo.start(10)
 
     self.leds = leds
-    self.pixels = neopixel.NeoPixel(board.D13, 1)
+    # self.pixels = neopixel.NeoPixel(board.D13, 1)
 
   def handle_misogynistic(self):
     # Control LED

@@ -6,21 +6,22 @@ from google.cloud import speech
 from google.cloud.speech import enums
 from google.cloud.speech import types
 from google.oauth2 import service_account
-import board
-import neopixel
 from intent_handler import IntentHandler
+from led_helper import LEDHelper
+
+leds = LEDHelper()
 
 def detect_intent_stream(project_id, session_id, language_code):
     """Returns the result of detect intent with streaming audio as input.
 
     Using the same `session_id` between requests allows continuation
     of the conversation."""
-    
-    handler = IntentHandler()
+    global leds
+    handler = IntentHandler(leds)
     
     # Init Cloud SpeechClient
     credentials = service_account.Credentials.from_service_account_file('./secret/cloud-speech.json')
-    self.speech_client = speech.SpeechClient(credentials=credentials)
+    speech_client = speech.SpeechClient(credentials=credentials)
 
     # Init DialogFlow
     session_client = dialogflow.SessionsClient.from_service_account_file('./secret/dialogflow.json')
@@ -70,13 +71,13 @@ def detect_intent_stream(project_id, session_id, language_code):
             # Yield a CloudSpeech request
             yield types.StreamingRecognizeRequest(audio_content=chunk)
 
-            record_duration = time.time() - record_start_time
-            if record_duration > MAX_RECORD_TIME:
-                break
+            # record_duration = time.time() - record_start_time
+            # if record_duration > MAX_RECORD_TIME:
+            #    break
 
         # try to not close the stream?
-        stream.stop_stream()
-        stream.close()
+        # stream.stop_stream()
+        # stream.close()
 
     while True:
 
@@ -96,6 +97,7 @@ def detect_intent_stream(project_id, session_id, language_code):
                 # Once the transcription has settled, the first result will contain the
                 # is_final result. The other results will be for subsequent portions of
                 # the audio.
+                print(response)
                 for result in response.results:
                     print('Finished: {}'.format(result.is_final))
                     print('Stability: {}'.format(result.stability))
@@ -150,13 +152,6 @@ def detect_intent_stream(project_id, session_id, language_code):
             print('Exception!!', e)
 
 # Initial Blinking
-pixels = neopixel.NeoPixel(board.D21, 1)
-for i in range(3):
-    pixels.fill((255,255,255))
-    time.sleep(0.5)
-    pixels.fill((0,0,0))
-    time.sleep(0.5)
-pixels.fill((0,0,0))
-
+leds.knight_rider(num_repeat=3, duration=0.1)
 detect_intent_stream('provocation03', 'test1', 'en')
 
