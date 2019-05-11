@@ -142,12 +142,12 @@ def detect_intent_stream(project_id, session_id, language_code):
             # for text in texts:
             if len(collected_text) > 0:
                 text_input = dialogflow.types.TextInput(
-                    text=utterance, language_code=self.language_code)
+                    text=utterance, language_code=language_code)
 
                 query_input = dialogflow.types.QueryInput(text=text_input)
 
-                response = self.session_client.detect_intent(
-                    session=self.session_path, 
+                response = session_client.detect_intent(
+                    session=session_path, 
                     query_input=query_input)
 
                 query_result = response.query_result
