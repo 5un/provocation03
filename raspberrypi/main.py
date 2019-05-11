@@ -1,6 +1,7 @@
 from __future__ import print_function
 import time
 import pyaudio
+import audioop
 import dialogflow_v2 as dialogflow
 from google.cloud import speech
 from google.cloud.speech import enums
@@ -98,8 +99,8 @@ def detect_intent_stream(project_id, session_id, language_code):
                        break 
 
         # try to not close the stream?
-        # stream.stop_stream()
-        # stream.close()
+        stream.stop_stream()
+        stream.close()
 
     while True:
 
