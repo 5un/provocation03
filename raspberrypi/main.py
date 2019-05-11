@@ -52,6 +52,8 @@ def detect_intent_stream(project_id, session_id, language_code):
         # yield dialogflow.types.StreamingDetectIntentRequest(
         #     session=session_path, query_input=query_input)
 
+        global leds
+
         # Claim the microphone
         stream = audio.open(format=FORMAT,
             channels=CHANNELS,
@@ -83,7 +85,7 @@ def detect_intent_stream(project_id, session_id, language_code):
                 print('rms', rms)
             is_speaking = rms > VOLUME_RMS_THRESHOLD
 
-            rms_brigthness = min(1.0, rms / VOLUME_RMS_THRESHOLD) * 255
+            rms_brigthness = max(0.0, min(1.0, rms / VOLUME_RMS_THRESHOLD)) * 255
             leds.show_volume(rms_brigthness)
 
             if not voice_began:
