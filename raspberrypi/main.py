@@ -113,6 +113,11 @@ def detect_intent_stream(project_id, session_id, language_code):
                     if time.time() - idle_time > MAX_IDLE_TIME:
                        break 
 
+            # Check for button interrupt
+            state = GPIO.input(BUTTON)
+            if not state:
+                break
+
         # try to not close the stream?
         stream.stop_stream()
         stream.close()
