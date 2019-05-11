@@ -158,12 +158,7 @@ def detect_intent_stream(project_id, session_id, language_code):
                     print('Detected intent: {} (confidence: {})\n'.format(
                         query_result.intent.display_name,
                         query_result.intent_detection_confidence))
-                    print('Query Text Sentiment Score: {}\n'.format(
-                        response.query_result.sentiment_analysis_result
-                        .query_text_sentiment.score))
-                    print('Query Text Sentiment Magnitude: {}\n'.format(
-                        response.query_result.sentiment_analysis_result
-                        .query_text_sentiment.magnitude))
+
                     handler.handle_intent(query_result)
 
         except KeyboardInterrupt:
