@@ -177,7 +177,8 @@ def detect_intent_stream(project_id, session_id, language_code):
                     handler.handle_intent(query_result)
 
             state = GPIO.input(BUTTON)
-            if state:
+            if not state:
+                print('Button ON')
                 handler.handle_misogynistic()
 
         except KeyboardInterrupt:
