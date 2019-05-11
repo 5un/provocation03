@@ -10,6 +10,10 @@ class LEDHelper:
       self.pixels.set_pixel(i, color[0], color[1], color[2])
       self.pixels.show()
 
+  def show_volume(self, level):
+    self.pixels.set_pixel(0, level, level, level)
+    self.pixels.show()
+
   def set_pixel(self, index, color):
     self.pixels.set_pixel(index, color[0], color[1], color[2])
     self.pixels.show()

@@ -83,6 +83,9 @@ def detect_intent_stream(project_id, session_id, language_code):
                 print('rms', rms)
             is_speaking = rms > VOLUME_RMS_THRESHOLD
 
+            rms_brigthness = min(1.0, rms / VOLUME_RMS_THRESHOLD) * 255
+            leds.show_volume(rms_brigthness)
+
             if not voice_began:
                 # print('  Idle Time', time.time() - timeSinceRecognitionStart)
                 if time.time() - record_start_time > MAX_RECORD_TIME:
